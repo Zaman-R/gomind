@@ -1,8 +1,11 @@
 package task
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
-type Tasks struct {
+type Task struct {
 	ID          int
 	Description string
 	Due         time.Time
@@ -10,29 +13,27 @@ type Tasks struct {
 }
 
 type TaskManager struct {
-	Tasks  []Tasks
+	Tasks  []Task
 	NextID int
 }
 
 func NewTaskManager() *TaskManager {
-	return &TaskManager{
-		Tasks:  []Tasks{},
-		NextID: 1,
-	}
+	return &TaskManager{Tasks: []Task{}, NextID: 1}
 }
 
 func (tm *TaskManager) AddTask(description string, due time.Time) Task {
-	task := Tasks{
+	fmt.Println("Adding task:", description, due)
+	task := Task{
 		ID:          tm.NextID,
 		Description: description,
 		Due:         due,
 		Completed:   false,
 	}
-	tm.Tasks = append(tm.Tasks, task)
 	tm.NextID++
+	tm.Tasks = append(tm.Tasks, task)
 	return task
 }
 
-func (tm *TaskManager) ListTasks() []Tasks {
+func (tm *TaskManager) ListTasks() []Task {
 	return tm.Tasks
 }
