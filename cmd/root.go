@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"gomind/task"
+	"os"
 )
 
 var rootCmd = &cobra.Command{
@@ -13,6 +15,12 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func Execute() {
-	cobra.CheckErr(rootCmd.Execute())
+var notifyCh chan string
+
+func Execute(tm *task.TaskManager, ch chan string) {
+	taskManager = tm
+	notifyCh = ch
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
