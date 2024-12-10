@@ -2,3 +2,4 @@ tasks.json
 gomind
 *.exe
 *.log
+.env

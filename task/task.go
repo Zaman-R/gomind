@@ -15,22 +15,21 @@ type Task struct {
 }
 
 func GetAllTasks() ([]Task, error) {
-	rows, err := db.DB.Query("SELECT id, description, due, completed FROM tasks")
+	var tasks []Task
+	rows, err := db.Conn.Query("SELECT id, description, due, completed FROM tasks")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not fetch tasks: %v", err)
 	}
 	defer rows.Close()
 
-	var tasks []Task
 	for rows.Next() {
 		var task Task
 		if err := rows.Scan(&task.ID, &task.Description, &task.Due, &task.Completed); err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("could not scan task: %v", err)
 		}
+		tasks = append(tasks, task)
 	}
-	if err := rows.Err(); err != nil {
-		log.Fatal(err)
-	}
+
 	return tasks, nil
 }
 
@@ -57,19 +56,19 @@ func (tm *TaskManager) AddTask(description string, due time.Time) Task {
 	return task
 }
 
-func AddTaskv2(description string, due time.Time) (Task, error) {
+func AddTaskv2(description string, due time.Time) (*Task, error) {
+	// Prepare SQL statement to insert a new task
+	query := `INSERT INTO tasks (description, due, completed) VALUES ($1, $2, $3) RETURNING id, description, due`
 	var task Task
-	err := db.DB.QueryRow(
-		"INSERT INTO tasks (description, due) VALUES ($1, $2) RETURNING id",
-		description, due).Scan(&task.ID)
+
+	// Execute the query
+	err := db.Conn.QueryRow(query, description, due, false).Scan(&task.ID, &task.Description, &task.Due)
 	if err != nil {
-		return task, err
+		log.Println("Error inserting task: ", err)
+		return nil, fmt.Errorf("could not insert task: %v", err)
 	}
 
-	task.Description = description
-	task.Due = due
-	task.Completed = false
-	return task, nil
+	return &task, nil
 }
 
 func (tm *TaskManager) ListTasks() []Task {

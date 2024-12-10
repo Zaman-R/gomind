@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-var DB *sql.DB
+var Conn *sql.DB
 
 func init() {
 	if err := godotenv.Load(); err != nil {
@@ -18,22 +18,12 @@ func init() {
 }
 
 func Connect() (*sql.DB, error) {
-	dbURL := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable host=%s port=%s",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"))
-
-	db, err := sql.Open("postgres", dbURL)
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
+		log.Fatal("Error opening database: ", err)
 		return nil, err
 	}
-
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
-
-	DB = db
+	Conn = db
 	return db, nil
 }
